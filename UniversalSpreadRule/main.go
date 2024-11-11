@@ -13,10 +13,6 @@ func main() {
 	var calculator universalspreadrule.ExcessMarginCalculator
 	request := universalspreadrule.NewMarginRequest(0.25, 0.3, 0.20)
 
-	int_arr := []int{1, 2, 3, 4}
-	fmt.Println(int_arr)
-	arrayPasser(int_arr)
-
 	// iron conndor
 	request.AddOption("INTC", "INTC 241227C30000", 0.75, "241220", 1, universalspreadrule.Buy, universalspreadrule.Call, 30.)
 	request.AddOption("INTC", "INTC 241220C25000", 1.25, "241220", 1, universalspreadrule.Sell, universalspreadrule.Call, 25.)
