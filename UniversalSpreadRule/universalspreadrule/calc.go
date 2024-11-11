@@ -1,6 +1,8 @@
 package universalspreadrule
 
 import (
+	"cmp"
+	"fmt"
 	"math"
 	"slices"
 	"sort"
@@ -21,9 +23,17 @@ func (excessCalc ExcessMarginCalculator) walkCalls(callList []SymbolInfo, callMa
 		return
 	}
 
-	// sort by strike ascending
-	sort.Slice(callList, func(idx1, idx2 int) bool {
-		return callList[idx1].StrikePrice < callList[idx2].StrikePrice
+	// sort by strike ascending - lowest margin
+	// sort.Slice(callList, func(idx1, idx2 int) bool {
+	// 	return callList[idx1].StrikePrice < callList[idx2].StrikePrice
+	// })
+
+	// prefers same maturity date pairs
+	slices.SortFunc(callList, func(c1, c2 SymbolInfo) int {
+		return cmp.Or(
+			cmp.Compare(c1.StrikePrice, c2.StrikePrice),
+			cmp.Compare(c1.Maturity, c2.Maturity),
+		)
 	})
 
 	callMargin := 0.
@@ -41,6 +51,7 @@ func (excessCalc ExcessMarginCalculator) walkCalls(callList []SymbolInfo, callMa
 				lowStrikeInfo.Qty -= qtyReduction
 
 				callMargin += lowStrikeInfo.StrikePrice - highStrikeInfo.StrikePrice
+				fmt.Println(callMargin)
 			}
 
 		} else { // long option
@@ -55,7 +66,7 @@ func (excessCalc ExcessMarginCalculator) walkCalls(callList []SymbolInfo, callMa
 
 		if lowStrikeInfo.Qty == 0 {
 			// get the next index with a pairable qty
-			lowIdx = slices.IndexFunc(callList, func(info SymbolInfo) bool { return info.Qty > 0 })
+			lowIdx++ // slices.IndexFunc(callList, func(info SymbolInfo) bool { return info.Qty > 0 })
 			if lowIdx >= len(callList) || lowIdx < 0 {
 				break
 			}
@@ -70,9 +81,21 @@ func (excessCalc ExcessMarginCalculator) walkCalls(callList []SymbolInfo, callMa
 		} else {
 			highIdx += 1
 			if highIdx >= len(callList) {
-				break
+				lowIdx++
+				if lowIdx >= len(callList) || lowIdx < 0 {
+					break
+				}
+				lowStrikeInfo = &callList[lowIdx]
+
+				// start pairing at next available index
+				highIdx = lowIdx + 1
+				if highIdx >= len(callList) {
+					break
+				}
+				highStrikeInfo = &callList[highIdx]
+			} else {
+				highStrikeInfo = &callList[highIdx]
 			}
-			highStrikeInfo = &callList[highIdx]
 		}
 	}
 
@@ -87,6 +110,7 @@ func (excessCalc ExcessMarginCalculator) walkPuts(putList []SymbolInfo, putMargi
 		return
 	}
 
+	// TODO: prefer equal maturity
 	// sort with strikes descending
 	sort.Slice(putList, func(idx1, idx2 int) bool {
 		return putList[idx1].StrikePrice > putList[idx2].StrikePrice
@@ -197,7 +221,8 @@ func (excessCalc ExcessMarginCalculator) CalculateOrderMargin(request *marginReq
 	// calc order premium
 	results.OptionPremium = excessCalc.getOrderPremium(request)
 
-	// pair with equities and calc covered/married calls and puts
+	// TODO: pair with equities and calc covered/married calls and puts
+
 	// no pair? equity margin
 	if equityPosition != nil {
 		results.MarginReq += excessCalc.calculateNakedEquityMargin(request.LongMarginRate, request.ShortMarginRate, unpairedEquityPosition, equityPosition.Price, equityPosition.TradeSide)
@@ -206,9 +231,9 @@ func (excessCalc ExcessMarginCalculator) CalculateOrderMargin(request *marginReq
 	// universal spread rule
 	optionMargin := excessCalc.universalSpreadRule(optionPositions)
 
-	// straddles/strangles
+	// TODO: straddles/strangles
 
-	// individual options
+	// TODO: individual options
 
 	results.OptionRequirement += optionMargin
 	return results
