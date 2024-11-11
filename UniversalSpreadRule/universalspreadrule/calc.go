@@ -2,7 +2,6 @@ package universalspreadrule
 
 import (
 	"cmp"
-	"fmt"
 	"math"
 	"slices"
 	"sort"
@@ -51,7 +50,6 @@ func (excessCalc ExcessMarginCalculator) walkCalls(callList []SymbolInfo, callMa
 				lowStrikeInfo.Qty -= qtyReduction
 
 				callMargin += lowStrikeInfo.StrikePrice - highStrikeInfo.StrikePrice
-				fmt.Println(callMargin)
 			}
 
 		} else { // long option
