@@ -197,7 +197,8 @@ func (excessCalc ExcessMarginCalculator) CalculateOrderMargin(request *marginReq
 	// calc order premium
 	results.OptionPremium = excessCalc.getOrderPremium(request)
 
-	// pair with equities and calc covered/married calls and puts
+	// TODO pair with equities and calc covered/married calls and puts
+	
 	// no pair? equity margin
 	if equityPosition != nil {
 		results.MarginReq += excessCalc.calculateNakedEquityMargin(request.LongMarginRate, request.ShortMarginRate, unpairedEquityPosition, equityPosition.Price, equityPosition.TradeSide)
@@ -206,9 +207,9 @@ func (excessCalc ExcessMarginCalculator) CalculateOrderMargin(request *marginReq
 	// universal spread rule
 	optionMargin := excessCalc.universalSpreadRule(optionPositions)
 
-	// straddles/strangles
+	// TODO straddles/strangles
 
-	// individual options
+	// TODO individual options
 
 	results.OptionRequirement += optionMargin
 	return results
