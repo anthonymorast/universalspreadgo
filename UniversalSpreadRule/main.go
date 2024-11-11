@@ -23,6 +23,7 @@ func main() {
 	request.AddOption("TEST", "TEST 241227C30000", 0.75, "250117", 1, universalspreadrule.Buy, universalspreadrule.Call, 120.)
 	request.AddOption("TEST", "TEST 241220C25000", 1.25, "250117", 1, universalspreadrule.Sell, universalspreadrule.Call, 100.)
 
+
 	// request.AddEquity("INTC", 22.33, 100, universalspreadrule.Buy)
 
 	results := calculator.CalculateOrderMargin(request)
